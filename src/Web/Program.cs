@@ -18,6 +18,8 @@ using Microsoft.eShopWeb.Web;
 using Microsoft.eShopWeb.Web.Configuration;
 using Microsoft.eShopWeb.Web.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Azure.Identity;
+using Azure.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddConsole();
@@ -28,22 +30,9 @@ if (builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName =
 }
 else{
     // Configure SQL Server (prod)
-    var credential = new ChainedTokenCredential(new AzureDeveloperCliCredential(), new DefaultAzureCredential());
-    var keyVaultEndpoint = builder.Configuration["AZURE_KEY_VAULT_ENDPOINT"];
+   var credential = new DefaultAzureCredential();
 
-if (!string.IsNullOrWhiteSpace(keyVaultEndpoint))
-{
-    var credential = new ChainedTokenCredential(
-        new AzureDeveloperCliCredential(),
-        new DefaultAzureCredential()
-    );
-
-    builder.Configuration.AddAzureKeyVault(
-        new Uri(keyVaultEndpoint),
-        credential
-    );
-}
-
+    
     builder.Configuration.AddAzureKeyVault(new Uri(builder.Configuration["AZURE_KEY_VAULT_ENDPOINT"] ?? ""), credential);
     
     builder.Services.AddDbContext<CatalogContext>(c =>
