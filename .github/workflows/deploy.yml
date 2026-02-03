@@ -1,0 +1,34 @@
+name: Build and Deploy .NET Web App
+
+on:
+  push:
+    branches: [ "main" ] # Chạy khi có code mới push lên nhánh main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Thay đổi theo version bạn dùng (8.0, 9.0, 10.0)
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Publish
+      run: dotnet publish --configuration Release --output ./publish
+
+    # Bước tiếp theo tùy thuộc vào nơi bạn deploy (Ví dụ dưới đây là Azure)
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'ten-app-cua-ban'
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        package: ./publish
